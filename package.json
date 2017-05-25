@@ -1,0 +1,14 @@
+{
+  "name": "upload-zip-to-canvas",
+  "version": "1.0.0",
+  "description": "upload a zipped d2l course to canvas",
+  "main": "cli.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Daniel Green",
+  "license": "MIT",
+  "dependencies": {
+    "query-string": "^4.3.4"
+  }
+}
