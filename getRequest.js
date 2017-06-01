@@ -5,7 +5,8 @@
 
 /* HTTP REQUEST ALL */
 const https = require('https'),
-    auth = require('./auth.js');
+    auth = require('./auth.js'),
+    chalk = require('chalk');
 
 // :user_id == enter your own user ID there
 
@@ -21,4 +22,6 @@ https.get(url, function (response) {
         data = JSON.parse(data);
         console.log(data);
     });
+}).on('error', (err) => {
+    console.log(chalk.red(err));
 });
