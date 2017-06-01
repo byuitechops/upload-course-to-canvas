@@ -11,11 +11,22 @@ const https = require('https'),
     request = require('request');
 
 
-//begins the upload
-function uploadZip(preAttachment) {
+function confirmUpload(redirectUrl) {
+    request.post({
+        url: redirectUrl
+    }, function (err, response, body) {
+        if (err) {
+            console.log(chalk.red(err));
+        } else {
+            console.log(chalk.green('Working!'));
+            console.log('\nbody\n', body);
+        }
+    }).auth(null, null, true, auth.token);
+}
 
-    // add filename to the body
-    //    preAttachment.upload_params.file = fileName;
+
+//begins the upload?
+function uploadZip(preAttachment) {
 
     // form/multipart POST
     request.post({
@@ -27,21 +38,11 @@ function uploadZip(preAttachment) {
         } else {
             var redirectUrl = response.headers.location;
             console.log(chalk.green(redirectUrl));
+
+            confirmUpload(redirectUrl);
         }
     });
 }
-
-/*function saveData(preAttachment, filename) {
-    preAttachment.fileName = filename;
-    preAttachment = JSON.stringify(preAttachment, null, 3);
-    fs.writeFile('.data.txt', preAttachment, function (err) {
-        if (err) {
-            console.log(chalk.red(err));
-        } else {
-            console.log(chalk.green('The file was saved'));
-        }
-    });
-}*/
 
 //creates the migration req within canvas
 function createMigration(fileName) {
@@ -52,7 +53,6 @@ function createMigration(fileName) {
         'pre_attachment[size]': '34930210',
         'pre_attachment[content_type]': 'folder/zip',
         'settings[folder_id]': auth.parentFolderId
-
     };
 
     request.post({
@@ -70,5 +70,6 @@ function createMigration(fileName) {
     }).auth(null, null, true, auth.token);
 }
 
+//confirmUpload('https://byui.instructure.com/api/v1/files/36766/create_success?uuid=yzjiJk19CcAu97qFaqesmMqnwREhqpQ29WGdfq8f&bucket=instructure-uploads&key=account_107060000000000001%2Fattachments%2F36766%2FD2LExport_236812_201752517.zip&etag=%223f39406c197596b9b2c8309fe1029839%22');
 
-createMigration('D2LExport_236812_201752517.zip');
+//createMigration('D2LExport_236812_201752517.zip');
