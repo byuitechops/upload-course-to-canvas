@@ -15,9 +15,9 @@ function postRequest(url, content, authRequired, cb, custom) {
     console.log('\nURL:\n', url);
     console.log('\ncontent:\n', content);
     console.log('\nauthRequired:\n', authRequired);
-//    console.log('cb:', typeof cb);
+    //    console.log('cb:', typeof cb);
     console.log('\nCustom:\n', custom);
-    
+
     var contentType = content.type,
         postOptions = {
             url: url
@@ -50,7 +50,7 @@ function postRequest(url, content, authRequired, cb, custom) {
     }
 
     console.log('\npostOptions:\n', postOptions);
-    
+
     if (authRequired === true)
         request.post(postOptions, postCallback).auth(null, null, true, auth.token);
     else
@@ -104,16 +104,19 @@ function getMigration(migrationId) {
 /**********************
  * file upload process *
  **********************/
-//function confirmUpload(redirectUrl, migrationId) {
-function confirmUpload(response, migrationId) {
-    console.log(chalk.yellow('Redirect URL obtained'));
-    
-    var redirectUrl = response.headers.location;
-    
-    postRequest(redirectUrl, {type:'application/x-www-form-urlencoded'}, true, getMigration, migrationId);
-    
-    
-    /*request.post({
+function confirmUpload(redirectUrl, migrationId) {
+    /*function confirmUpload(response, migrationId) {
+        console.log(chalk.yellow('Redirect URL obtained'));
+        console.log(response.headers);
+
+        var redirectUrl = response.headers.location;
+
+        postRequest(redirectUrl, {
+            type: 'application/x-www-form-urlencoded'
+        }, true, getMigration, migrationId);*/
+
+
+    request.post({
         url: redirectUrl
     }, function (err, response, body) {
         if (err) {
@@ -123,25 +126,25 @@ function confirmUpload(response, migrationId) {
             console.log('file upload complete');
             getMigration(migrationId);
         }
-    }).auth(null, null, true, auth.token);*/
+    }).auth(null, null, true, auth.token);
 }
 
 
 //begins the upload?
-//function uploadZip(preAttachment, migrationId) {
-function uploadZip(body, migrationId) {
-    console.log(chalk.yellow('Migration Created'));
-    
-    var migrationId = body.id,
-        preAttachment = body.pre_attachment;
-    
-    preAttachment.upload_params.type = 'form/multipart';
-    
-    postRequest(preAttachment.upload_url, preAttachment.upload_params, false, confirmUpload, migrationId);
-    
-    
+function uploadZip(preAttachment, migrationId) {
+    /*function uploadZip(body, migrationId) {
+        console.log(chalk.yellow('Migration Created'));
+
+        var migrationId = body.id,
+            preAttachment = body.pre_attachment;
+
+        preAttachment.upload_params.type = 'form/multipart';
+
+        postRequest(preAttachment.upload_url, preAttachment.upload_params, false, confirmUpload, migrationId);*/
+
+
     // form/multipart POST
-    /*request.post({
+    request.post({
         url: preAttachment.upload_url,
         formData: preAttachment.upload_params //formData specifies a form/multipart content type
     }, function (err, response, body) {
@@ -155,24 +158,24 @@ function uploadZip(body, migrationId) {
 
             confirmUpload(redirectUrl, migrationId);
         }
-    });*/
+    });
 }
 
 //creates the migration req within canvas
 function createMigration(fileName) {
     var postBody = {
-        type: 'application/x-www-form-urlencoded',
-        migration_type: 'd2l_exporter',
-        'pre_attachment[name]': fileName,
-        'pre_attachment[size]': '34930210',
-        'pre_attachment[content_type]': 'folder/zip',
-        'settings[folder_id]': auth.parentFolderId
-    },
+            type: 'application/x-www-form-urlencoded',
+            migration_type: 'd2l_exporter',
+            'pre_attachment[name]': fileName,
+            'pre_attachment[size]': '34930210',
+            'pre_attachment[content_type]': 'folder/zip',
+            'settings[folder_id]': auth.parentFolderId
+        },
         url = 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations';
 
-    postRequest(url, postBody, true, uploadZip);
-    
-    /*request.post({
+    //    postRequest(url, postBody, true, uploadZip);
+
+    request.post({
         url: 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations',
         form: postBody
     }, function (err, respoonse, body) {
@@ -182,11 +185,11 @@ function createMigration(fileName) {
             //console.log('\nbody\n', JSON.parse(body));
             body = JSON.parse(body);
             body.pre_attachment.upload_params.file = fileName;
-            
+
             console.log('Migration Created');
             uploadZip(body.pre_attachment, body.id);
         }
-    }).auth(null, null, true, auth.token);*/
+    }).auth(null, null, true, auth.token);
 }
 
 //checkProgress('https://byui.instructure.com/api/v1/progress/220');
