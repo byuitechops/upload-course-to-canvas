@@ -6,6 +6,8 @@
 var https = require('https'),
     chalk = require('chalk'),
     auth = require('./auth.js'),
+    getIDFromNewCourse = require('./createCourse.js'),
+    courseID = getIDFromNewCourse(),
     fs = require('fs'),
     request = require('request');
 
@@ -29,7 +31,7 @@ function checkProgress(progressUrl) {
 //GET content migration
 function getMigration(body, migrationId) {
     console.log(migrationId);
-    var url = 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations/' + migrationId;
+    var url = 'https://byui.instructure.com/api/v1/courses/' + courseID + '/content_migrations/' + migrationId;
     request.get(url, function (err, response, body) {
         if (err) {
             console.error(chalk.red(err), 'getting migration');
@@ -132,7 +134,7 @@ function createMigration(fileName) {
             'pre_attachment[content_type]': 'application/zip',
             'settings[folder_id]': auth.parentFolderId
         },
-        url = 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations';
+        url = 'https://byui.instructure.com/api/v1/courses/' + courseID + '/content_migrations';
 
     postRequest(url, postBody, true, uploadZip, fileName);
 }
