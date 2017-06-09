@@ -2,9 +2,9 @@
 /*eslint no-console:0*/
 
 function getIDFromNewCourse() {
-    var request = require('request');
-
-    var courseID = "";
+    var request = require('request'),
+        auth = require('./auth.js'),
+        courseID = "";
 
     request.post({
         url: "https://byui.instructure.com/api/v1/accounts/1/courses",
@@ -21,6 +21,6 @@ function getIDFromNewCourse() {
             console.log('\nbody\n', body.id);
             courseID = body.id;
         }
-    }).auth(null, null, true, "10706~S65aDY8wtLsfCvLWvyLhQTJ1YX14AwXan58udOoc0rjQyY8K2iBF8m568nRSR8RN");
+    }).auth(null, null, true, auth.token);
     return courseID;
 }
