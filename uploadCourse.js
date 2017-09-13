@@ -5,11 +5,11 @@
 
 'use-strict';
 
-var https = require('https'),
-    chalk = require('chalk'),
+var chalk = require('chalk'),
     auth = require('./auth.json'),
     fs = require('fs'),
-    request = require('request');
+    request = require('request'),
+    courseId = "";
 
 /**************************************
  * GETs the status of the upload ONCE
@@ -35,8 +35,8 @@ function checkProgress(progressUrl) {
  * know the progressURL
  *******************************************/
 function getMigration(body, migrationId) {
-    console.log(migrationId);
-    var url = 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations/' + migrationId;
+    console.log("Retrieving Migration", migrationId);
+    var url = 'https://byui.instructure.com/api/v1/courses/' + courseId + '/content_migrations/' + migrationId;
     request.get(url, function (err, response, body) {
         if (err) {
             console.error(chalk.red(err), 'getting migration');
@@ -109,7 +109,7 @@ function postRequest(url, content, authRequired, cb, custom) {
  * Confirms the upload and calls getMigration
  **************************************************/
 function confirmUpload(response, migrationId) {
-    //console.log(chalk.yellow('Redirect URL obtained'));
+    console.log(chalk.yellow('Upload Confirmed. Redirect URL obtained'));
     /*console.log(response.headers);*/
 
     var redirectUrl = response.headers.location;
@@ -125,7 +125,8 @@ function confirmUpload(response, migrationId) {
  **************************************************************/
 function uploadZip(body, fileName) {
     console.log(chalk.yellow('Migration Created'));
-
+    
+    
     var migrationId = body.id,
         preAttachment = body.pre_attachment;
 
@@ -139,7 +140,8 @@ function uploadZip(body, fileName) {
  * sets the data for the POST which informs canvas of the upload.
  * sends the request via postRequest with uploadZIP as the callback
  ******************************************************************/
-function beginMigration(fileName, courseId) {
+function beginMigration(fileName, cID) {
+    courseId = cID;
     var postBody = {
             type: 'application/x-www-form-urlencoded', //to be removed if postRequest() isn't used
             migration_type: 'd2l_exporter',
