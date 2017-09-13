@@ -1,15 +1,19 @@
 /*eslint-env node*/
 /*eslint no-console:0*/
 
+/*THIS MODULE REQUIRES A USERID, COURSEID, AND FILENAME*/
+
 'use-strict';
 
 var https = require('https'),
     chalk = require('chalk'),
-    auth = require('./auth.js'),
+    auth = require('./auth.json'),
     fs = require('fs'),
     request = require('request');
 
-
+/**************************************
+ * GETs the status of the upload ONCE
+ *************************************/
 function checkProgress(progressUrl) {
     request.get(progressUrl, function (err, response, body) {
         if (err) {
@@ -26,7 +30,10 @@ function checkProgress(progressUrl) {
     }).auth(null, null, true, auth.token);
 }
 
-//GET content migration
+/*********************************************
+ * GETs migration object so we can
+ * know the progressURL
+ *******************************************/
 function getMigration(body, migrationId) {
     console.log(migrationId);
     var url = 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations/' + migrationId;
@@ -50,12 +57,15 @@ function getMigration(body, migrationId) {
     }).auth(null, null, true, auth.token);
 }
 
+/**********************************
+ * Makes all post requests
+ **********************************/
 function postRequest(url, content, authRequired, cb, custom) {
-    /*console.log('\nURL:\n', url);
-console.log('\ncontent:\n', content);
-console.log('\nauthRequired:\n', authRequired);
-console.log('cb:', typeof cb);
-console.log('\nCustom:\n', custom);*/
+    //console.log('\nURL:\n', url);
+    //console.log('\ncontent:\n', content);
+    //console.log('\nauthRequired:\n', authRequired);
+    //console.log('cb:', typeof cb);
+    //console.log('\nCustom:\n', custom);
 
     var contentType = content.type,
         postOptions = {
@@ -87,8 +97,7 @@ console.log('\nCustom:\n', custom);*/
             }
         }
     }
-
-        /*console.log('\npostOptions:\n', postOptions);*/
+    //console.log('\npostOptions:\n', postOptions);
 
     if (authRequired === true)
         request.post(postOptions, postCallback).auth(null, null, true, auth.token);
@@ -96,11 +105,11 @@ console.log('\nCustom:\n', custom);*/
         request.post(postOptions, postCallback);
 }
 
-/**********************
- * file upload process *
- **********************/
+/**************************************************
+ * Confirms the upload and calls getMigration
+ **************************************************/
 function confirmUpload(response, migrationId) {
-    console.log(chalk.yellow('Redirect URL obtained'));
+    //console.log(chalk.yellow('Redirect URL obtained'));
     /*console.log(response.headers);*/
 
     var redirectUrl = response.headers.location;
@@ -110,6 +119,10 @@ function confirmUpload(response, migrationId) {
     }, true, getMigration, migrationId);
 }
 
+/**************************************************************
+ * reads in the zip and uploads it to the URL provided by
+ * canvas. Calls postRequest with confirmUpload as the callback
+ **************************************************************/
 function uploadZip(body, fileName) {
     console.log(chalk.yellow('Migration Created'));
 
@@ -122,8 +135,11 @@ function uploadZip(body, fileName) {
     postRequest(preAttachment.upload_url, preAttachment.upload_params, false, confirmUpload, migrationId);
 }
 
-//creates the migration req within canvas
-function createMigration(fileName) {
+/******************************************************************
+ * sets the data for the POST which informs canvas of the upload.
+ * sends the request via postRequest with uploadZIP as the callback
+ ******************************************************************/
+function beginMigration(fileName, courseId) {
     var postBody = {
             type: 'application/x-www-form-urlencoded', //to be removed if postRequest() isn't used
             migration_type: 'd2l_exporter',
@@ -132,9 +148,11 @@ function createMigration(fileName) {
             'pre_attachment[content_type]': 'application/zip',
             'settings[folder_id]': auth.parentFolderId
         },
-        url = 'https://byui.instructure.com/api/v1/courses/' + auth.courseId + '/content_migrations';
+        url = 'https://byui.instructure.com/api/v1/courses/' + courseId + '/content_migrations';
 
     postRequest(url, postBody, true, uploadZip, fileName);
 }
 
-createMigration('D2LExport_236812_201752517.zip');
+//beginMigration('D2LExport_236812_201752517.zip', auth.courseId);
+
+module.exports = beginMigration;
