@@ -11,23 +11,37 @@ var chalk = require('chalk'),
     request = require('request'),
     courseId = "";
 
+function throwError(err, m){
+    console.log(chalk.red(err), m);
+}
+
 /**************************************
  * GETs the status of the upload ONCE
  *************************************/
 function checkProgress(progressUrl) {
-    request.get(progressUrl, function (err, response, body) {
-        if (err) {
-            console.error(chalk.red(err), 'check progress');
-        } else {
-            try {
-                body = JSON.parse(body);
-            } catch (e) {
-                console.error(chalk.red(e), 'convert progress JSON');
+    var checkLoop = setInterval(() => {
+        request.get(progressUrl, function (err, response, body) {
+            if (err) {
+                throwError(err, "from checkProgress");
+                return;
+            } else {
+                try {
+                    body = JSON.parse(body);
+                } catch (e) {
+                    console.error(chalk.red(e), 'convert progress JSON');
+                }
+                // console.log('\n DA PROGRESS:\n', JSON.parse(body));
+                console.log(chalk.blue('Status:'), body.workflow_state);
+                if (body.workflow_state === 'completed') {
+                    clearInterval(checkLoop);
+                    return;
+                } else if (body.workflow_state === 'failed' || body.workflow_state === 'waiting_for_select') {
+                    clearInterval(checkLoop);
+                    console.log("Something broke");
+                }
             }
-            // console.log('\n DA PROGRESS:\n', JSON.parse(body));
-            console.log(chalk.blue('Status:'), body.workflow_state);
-        }
-    }).auth(null, null, true, auth.token);
+        }).auth(null, null, true, auth.token);
+    }, 5000);
 }
 
 /*********************************************
@@ -140,7 +154,7 @@ function uploadZip(body, fileName) {
  * sets the data for the POST which informs canvas of the upload.
  * sends the request via postRequest with uploadZIP as the callback
  ******************************************************************/
-function beginMigration(fileName, cID) {
+function uploadCourse(fileName, cID) {
     courseId = cID;
     var postBody = {
             type: 'application/x-www-form-urlencoded', //to be removed if postRequest() isn't used
@@ -155,6 +169,6 @@ function beginMigration(fileName, cID) {
     postRequest(url, postBody, true, uploadZip, fileName);
 }
 
-//beginMigration('D2LExport_236812_201752517.zip', auth.courseId);
+//uploadCourse('D2LExport_236812_201752517.zip', auth.courseId);
 
-module.exports = beginMigration;
+module.exports = uploadCourse;

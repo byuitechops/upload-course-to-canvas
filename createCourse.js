@@ -4,6 +4,7 @@
 'use-strict';
 
 var uploadCourse = require('./uploadCourse.js');
+//exports.courseId = courseId;
 
 /*******************************
  * 
@@ -29,14 +30,12 @@ function createCourse(fileName, courseSettings) {
             console.log(chalk.green(courseSettings.name + "Successfully created"));
             body = JSON.parse(body);
             console.log('\nCourse Number: ', body.id);
-            courseId = body.id;
-            uploadCourse(fileName, courseId);
+            exports.courseId = body.id;
+            //return courseId;
+            //uploadCourse(fileName, courseId);
+            exports = courseId;
         }
     }).auth(null, null, true, auth.token);
-    //return courseId;
-
-    //var fileName = "D2LExport_236812_201752517.zip";
-
 }
 
 module.exports = createCourse;
