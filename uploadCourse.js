@@ -169,6 +169,4 @@ function uploadCourse(fileName, cID) {
     postRequest(url, postBody, true, uploadZip, fileName);
 }
 
-//uploadCourse('D2LExport_236812_201752517.zip', auth.courseId);
-
 module.exports = uploadCourse;
